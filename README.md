@@ -1,3 +1,3 @@
 Advent of code 2025
 
-Mainly completed in c, some of this code is awful
+Completed in c and golang, doing this to help get familiar with both languages
