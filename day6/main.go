@@ -3,60 +3,74 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
-func removeIndexFromSlice(slice []string, i int) []string {
-	return append(slice[:i], slice[i+1:]...)
-}
-
-func removeFromSlice(v []string, elem string) []string {
-	i := 0
-	for i < len(v) {
-		if v[i] == elem {
-			v = removeIndexFromSlice(v, i)
-			i = 0
-		} else {
-			i += 1
+func evaluate(digits []byte) int64 {
+	byteString := ""
+	for i := 0; i < len(digits)-1; i++ {
+		if digits[i] != byte(' ') {
+			byteString += string(digits[i])
 		}
 	}
-	return v
-}
-
-// For every calculation <calcs>
-// Need <longest> formats
-// Each of length <params>
-func getFormattedNumbers(slice [][]string, numCalcs int, numParams int, longest int) [][]string {
-	formatted := make(string[][], numCalcs)
-	for c := 0; c < numCalcs; c++ {
-		formatted[c] = make(string[], longest)
-		for p := 0; p < numParams; p++ {
-			printf()
-		}
-		// fmt.Printf("%s|", slice[i][j])
-	}
-	return slice
+	val, _ := strconv.ParseInt(byteString, 10, 32)
+	fmt.Printf("Evaluate: %s byteString as %d\n", byteString, val)
+	return int64(val)
 }
 
 func main() {
 	data, _ := os.ReadFile(os.Args[1])
 	lines := strings.Split(string(data), "\n")
-	lines = removeIndexFromSlice(lines, len(lines)-1)
-	longest := 0
-	allNumbers := make([][]string, 0)
-	for _, line := range lines {
-		numbers := removeFromSlice(strings.Split(line, " "), "")
-		numbers = removeFromSlice(numbers, "\n")
-		for _, k := range numbers {
-			if len(k) > longest {
-				longest = len(k)
+	numberString := lines[:len(lines)-1]
+	operatorString := lines[len(lines)-2]
+	// get operators
+	operators := make([]string, 0)
+	for k := len(operatorString) - 1; k >= 0; k-- {
+		if operatorString[k] != byte(' ') {
+			operators = append(operators, string(operatorString[k]))
+		}
+	}
+	// get numbers
+	i := len(numberString[0]) - 1 // i is the "horizontal" position
+	found := false
+	// formattedNumbers := make([]string, 0)
+	formatted := make([]byte, len(numberString))
+	operatorIndex := 0
+	total := int64(0)
+	var current int64
+	if operators[0] == "*" {
+		current = 1
+	} else {
+		current = 0
+	}
+	for i >= 0 {
+		found = false
+		for j := 0; j < len(numberString)-1; j++ {
+			found = found || numberString[j][i] != ' '
+		}
+		if found {
+			for j := 0; j < len(numberString)-1; j++ {
+				formatted[j] = numberString[j][i]
+			}
+			if operators[operatorIndex] == "*" {
+				current *= evaluate(formatted)
+			} else {
+				current += evaluate(formatted)
 			}
 		}
-		allNumbers = append(allNumbers, numbers)
+		if !found || i == 0 {
+			operatorIndex += 1
+			total += current
+			if operatorIndex < len(operators) {
+				if operators[operatorIndex] == "*" {
+					current = 1
+				} else {
+					current = 0
+				}
+			}
+		}
+		i -= 1
 	}
-	numCalcs := len(allNumbers[0])
-	numParams := len(allNumbers) - 1
-	fmt.Printf("Longest: %d\tParameters: %d\tCalculations: %d\n\n", longest, numParams, numCalcs)
-
-	getFormattedNumbers(allNumbers[:len(allNumbers)-1], numCalcs, numParams, longest)
+	fmt.Printf("Total: %d", total)
 }
