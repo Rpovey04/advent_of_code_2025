@@ -64,10 +64,12 @@ func findCircuit(circuits [][]coord, c1 coord) int {
 func main() {
 	data, _ := os.ReadFile(os.Args[1])
 	lines := strings.Split(string(data), "\n")
-	n, err := strconv.ParseInt(os.Args[2], 10, 32)
-	if err != nil {
-		fmt.Printf("Need to provide the number of pairs to process as the second argument")
-	}
+	/*
+		n, err := strconv.ParseInt(os.Args[2], 10, 32)
+		if err != nil {
+			fmt.Printf("Need to provide the number of pairs to process as the second argument")
+		}
+	*/
 	// first index is the circuit index, then an array (initially of length 1) of each box
 	circuits := make([][]coord, 0)
 	allCoords := make([]coord, 0)
@@ -99,15 +101,24 @@ func main() {
 	slices.Sort(distances)
 	var i1 int // circuit index of the first and second coord
 	var i2 int
-	for i := 0; i < int(n); i++ {
+	i := 0
+	// for i := 0; i < int(n); i++ {
+	for i < len(distances) && len(circuits) > 1 {
 		toMerge := distanceMap[distances[i]]
 		i1 = findCircuit(circuits, toMerge.a)
 		i2 = findCircuit(circuits, toMerge.b)
 		fmt.Printf("\n\nMerging circuit %d and %d\n", i1, i2)
 		circuits = mergeCircuits(circuits, i1, i2)
-		for _, c := range circuits {
-			fmt.Println(c)
+		/*
+			for _, c := range circuits {
+				fmt.Println(c)
+			}
+		*/
+		if len(circuits) == 1 {
+			fmt.Printf("Last merge was %v and %v\n", toMerge.a, toMerge.b)
+			fmt.Printf("Answer: %d\n", toMerge.a.x*toMerge.b.x)
 		}
+		i += 1
 	}
 	// now find the size of each circuit and order
 	circuitSizes := make([]int, 0)
@@ -117,5 +128,5 @@ func main() {
 	slices.Sort(circuitSizes)
 	slices.Reverse(circuitSizes)
 	fmt.Printf("Sizes: %v\n", circuitSizes)
-	fmt.Printf("Answer: %d\n", circuitSizes[0]*circuitSizes[1]*circuitSizes[2])
+	// fmt.Printf("Answer: %d\n", circuitSizes[0]*circuitSizes[1]*circuitSizes[2])
 }
